@@ -4,7 +4,7 @@ version = "0.5.5"
 authors = [ "The Aleo Team <hello@aleo.org>" ]
 description = "Aleo"
 homepage = "https://aleo.org"
-repository = "https://github.com/AleoHQ/sdk"
+repository = "https://github.com/AleoHQ/aleo-rust"
 keywords = [
   "aleo",
   "cryptography",
@@ -18,7 +18,7 @@ license = "GPL-3.0"
 edition = "2021"
 
 [workspace]
-members = [ "rust", "wasm", "rust/develop"]
+members = [ "rust", "rust/develop"]
 
 [workspace.dependencies.aleo-rust]
 version = "0.5.5"
