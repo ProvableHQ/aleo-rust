@@ -187,7 +187,6 @@ workflows:
   main-workflow:
     jobs:
       - rust_stable
-      - wasm
       - check-fmt
       - check-clippy
       - aleo-executable
