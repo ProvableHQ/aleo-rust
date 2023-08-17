@@ -171,30 +171,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e4f181fc1a372e8ceff89612e5c9b13f72bff5b066da9f8d6827ae65af492c4"
 
 [[package]]
-name = "aleo-wasm"
-version = "0.5.5"
-dependencies = [
- "aleo-rust",
- "anyhow",
- "console_error_panic_hook",
- "getrandom",
- "hex",
- "indexmap 2.0.0",
- "js-sys",
- "lazy_static",
- "rand",
- "rayon",
- "reqwest",
- "serde",
- "serde_json",
- "snarkvm-wasm",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-rayon",
- "wasm-bindgen-test",
-]
-
-[[package]]
 name = "allocator-api2"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -484,16 +460,6 @@ dependencies = [
  "libc",
  "unicode-width",
  "windows-sys 0.45.0",
-]
-
-[[package]]
-name = "console_error_panic_hook"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
-dependencies = [
- "cfg-if",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -2224,7 +2190,6 @@ dependencies = [
  "snarkvm-parameters",
  "snarkvm-utilities",
  "thiserror",
- "wasm-bindgen-futures",
 ]
 
 [[package]]
@@ -2888,23 +2853,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "snarkvm-wasm"
-version = "0.14.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80835c7f6b3cffef0086dad0ef5d881fe437cafd250169e9cb52677d4a262672"
-dependencies = [
- "getrandom",
- "rand",
- "serde",
- "snarkvm-console",
- "snarkvm-curves",
- "snarkvm-fields",
- "snarkvm-synthesizer",
- "snarkvm-utilities",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "socket2"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2935,12 +2883,6 @@ name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
-
-[[package]]
-name = "spmc"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02a8428da277a8e3a15271d79943e80ccc2ef254e78813a166a08d65e4c3ece5"
 
 [[package]]
 name = "strsim"
@@ -3454,8 +3396,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7706a72ab36d8cb1f80ffbf0e071533974a60d0a308d01a5d0375bf60499a342"
 dependencies = [
  "cfg-if",
- "serde",
- "serde_json",
  "wasm-bindgen-macro",
 ]
 
@@ -3510,46 +3450,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasm-bindgen-rayon"
-version = "1.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df87c67450805c305d3ae44a3ac537b0253d029153c25afc3ecd2edc36ccafb1"
-dependencies = [
- "js-sys",
- "rayon",
- "spmc",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "wasm-bindgen-shared"
 version = "0.2.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca6ad05a4870b2bf5fe995117d3728437bd27d7cd5f06f13c17443ef369775a1"
-
-[[package]]
-name = "wasm-bindgen-test"
-version = "0.3.37"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e6e302a7ea94f83a6d09e78e7dc7d9ca7b186bc2829c24a22d0753efd680671"
-dependencies = [
- "console_error_panic_hook",
- "js-sys",
- "scoped-tls",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test-macro",
-]
-
-[[package]]
-name = "wasm-bindgen-test-macro"
-version = "0.3.37"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ecb993dd8c836930ed130e020e77d9b2e65dd0fbab1b67c790b0f5d80b11a575"
-dependencies = [
- "proc-macro2",
- "quote 1.0.28",
-]
 
 [[package]]
 name = "web-sys"
