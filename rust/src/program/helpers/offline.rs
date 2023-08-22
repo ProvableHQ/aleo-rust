@@ -16,24 +16,26 @@
 
 use super::*;
 
-/// Offline Execution of a program
+/// Offline Execution of a single program function
 #[derive(Clone)]
 pub struct OfflineExecution<N: Network> {
     execution: Execution<N>,
     response: Option<Response<N>>,
     trace: Trace<N>,
+    verifying_key: VerifyingKey<N>,
     public_outputs: Option<Vec<Value<N>>>,
 }
 
 impl<N: Network> OfflineExecution<N> {
-    /// Create a new offline execution
+    /// Create a new offline execution of a single function
     pub(crate) fn new(
         execution: Execution<N>,
         response: Option<Response<N>>,
         trace: Trace<N>,
+        verifying_key: VerifyingKey<N>,
         public_outputs: Option<Vec<Value<N>>>,
     ) -> Self {
-        Self { execution, response, trace, public_outputs }
+        Self { execution, response, trace, verifying_key, public_outputs }
     }
 
     /// Get the execution
@@ -51,6 +53,11 @@ impl<N: Network> OfflineExecution<N> {
         self.execution.proof()
     }
 
+    /// Get the verifying key
+    pub fn verifying_key(&self) -> &VerifyingKey<N> {
+        &self.verifying_key
+    }
+
     /// Get the outputs of the execution
     pub fn outputs(&self) -> Option<Vec<Value<N>>> {
         self.response.as_ref().map(|r| r.outputs().to_vec())
@@ -66,14 +73,18 @@ impl<N: Network> OfflineExecution<N> {
         &self.trace
     }
 
-    /// Verify the execution proof against the given verifier inputs and program verifying key
+    /// Verify the execution against the given verifier inputs and program verifying key
     #[allow(clippy::type_complexity)]
-    pub fn verify_execution_proof(
-        &self,
-        locator: &str,
-        verifier_inputs: Vec<(VerifyingKey<N>, Vec<Vec<N::Field>>)>,
+    pub fn verify_execution(
         execution: &Execution<N>,
-    ) -> Result<(), String> {
-        Trace::verify_execution_proof(locator, verifier_inputs, execution).map_err(|e| e.to_string())
+        program: &Program<N>,
+        function_name: impl TryInto<Identifier<N>>,
+        verifying_key: &VerifyingKey<N>,
+    ) -> Result<()> {
+        let function = function_name.try_into().map_err(|_| anyhow!("Invalid function name"))?;
+        let mut process = Process::<N>::load()?;
+        process.add_program(program)?;
+        process.insert_verifying_key(program.id(), &function, verifying_key.clone())?;
+        process.verify_execution(execution)
     }
 }

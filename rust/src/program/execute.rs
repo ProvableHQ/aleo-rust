@@ -72,6 +72,7 @@ impl<N: Network> ProgramManager<N> {
         let (response, mut trace) = vm.process().write().execute::<A>(authorization)?;
         trace.prepare(query)?;
         let execution = trace.prove_execution::<A, _>(&locator.to_string(), &mut rand::thread_rng())?;
+        let verifying_key = vm.process().write().get_verifying_key(program_id, function_name)?;
 
         // Get the public outputs
         let mut public_outputs = vec![];
@@ -85,7 +86,7 @@ impl<N: Network> ProgramManager<N> {
         let response = if include_outputs { Some(response) } else { None };
 
         // Return the execution
-        Ok(OfflineExecution::new(execution, response, trace, Some(public_outputs)))
+        Ok(OfflineExecution::new(execution, response, trace, verifying_key, Some(public_outputs)))
     }
 
     /// Execute a program function on the Aleo Network.
@@ -238,9 +239,35 @@ impl<N: Network> ProgramManager<N> {
 #[cfg(not(feature = "wasm"))]
 mod tests {
     use super::*;
-    use crate::{random_program, random_program_id, AleoAPIClient, RECORD_5_MICROCREDITS};
+    use crate::{random_program, random_program_id, AleoAPIClient, HELLO_PROGRAM, RECORD_5_MICROCREDITS};
     use snarkvm::circuit::AleoV0;
     use snarkvm_console::network::Testnet3;
+    use snarkvm_synthesizer::program::Program;
+
+    #[test]
+    fn test_offline_execution() {
+        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None).unwrap();
+
+        let program = Program::<Testnet3>::from_str(HELLO_PROGRAM).unwrap();
+        let function_id = "hello";
+        let offline_execution = program_manager
+            .execute_program_offline::<AleoV0>(
+                &private_key,
+                &program,
+                function_id,
+                &[],
+                ["5u32", "5u32"].into_iter(),
+                false,
+                "https://vm.aleo.org/api",
+            )
+            .unwrap();
+        let execution = offline_execution.execution();
+        println!("Offline Execution: {}", execution);
+        OfflineExecution::verify_execution(execution, &program, function_id, offline_execution.verifying_key())
+            .unwrap();
+    }
 
     #[test]
     fn test_fee_estimation() {
