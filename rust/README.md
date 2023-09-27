@@ -34,7 +34,7 @@ use snarkvm_console::{
 use rand::thread_rng;
 
 // Create a client that interacts with the testnet3 program
-let api_client = AleoAPIClient::<Testnet3>testnet3();
+let api_client = AleoAPIClient::<Testnet3>::testnet3();
 
 // FIND A PROGRAM ON THE ALEO NETWORK
 let hello = api_client.get_program("hello.aleo").unwrap();
