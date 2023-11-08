@@ -380,11 +380,11 @@ mod tests {
         let client = AleoAPIClient::<Testnet3>::testnet3();
         let mappings = client.get_program_mappings("credits.aleo").unwrap();
         // Assert there's only one mapping in credits.aleo
-        assert_eq!(mappings.len(), 1);
+        assert_eq!(mappings.len(), 4);
 
         let identifier = mappings[0];
         // Assert the identifier is "account"
-        assert_eq!(identifier.to_string(), "account");
+        assert_eq!(identifier.to_string(), "committee");
     }
 
     #[test]

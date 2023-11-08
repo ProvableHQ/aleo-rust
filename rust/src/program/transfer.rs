@@ -100,7 +100,8 @@ impl<N: Network> ProgramManager<N> {
                 &private_key,
                 ("credits.aleo", transfer_function),
                 inputs.iter(),
-                Some((fee_record, fee)),
+                Some(fee_record),
+                fee,
                 Some(query),
                 rng,
             )?

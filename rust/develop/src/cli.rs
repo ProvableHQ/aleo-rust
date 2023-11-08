@@ -53,7 +53,7 @@ pub enum Command {
         /// Uri and port the development server will listen on [default: 0.0.0.0:4040]
         #[clap(short = 'a', long)]
         server_address: Option<SocketAddr>,
-        /// Aleo Network peer uri to connect to [default: https://vm.aleo.org/api].
+        /// Aleo Network peer uri to connect to [default: https://api.explorer.aleo.org/v1].
         /// This is the peer the development server will send its completed deploy
         /// and execute transactions to. The peer must be running the testnet3 api
         /// <https://developer.aleo.org/testnet/getting_started/overview/> in order

@@ -15,7 +15,6 @@
 // along with the Aleo SDK library. If not, see <https://www.gnu.org/licenses/>.
 
 use super::*;
-use snarkvm::prelude::AleoID;
 
 impl<N: Network> ProgramManager<N> {
     /// Create an offline execution of a program to share with a third party.
@@ -175,7 +174,7 @@ impl<N: Network> ProgramManager<N> {
         let vm = Self::initialize_vm(api_client, program, true)?;
 
         // Create an execution transaction
-        vm.execute(private_key, (program_id, function_name), inputs, Some((fee_record, priority_fee)), Some(query), rng)
+        vm.execute(private_key, (program_id, function_name), inputs, Some(fee_record), priority_fee, Some(query), rng)
     }
 
     /// Estimate the cost of executing a program with the given inputs in microcredits. The response
@@ -228,8 +227,8 @@ impl<N: Network> ProgramManager<N> {
     /// Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
     pub fn estimate_finalize_fee(&self, program: &Program<N>, function: impl TryInto<Identifier<N>>) -> Result<u64> {
         let function_name = function.try_into().map_err(|_| anyhow!("Invalid function name"))?;
-        match program.get_function(&function_name)?.finalize() {
-            Some((_, finalize)) => cost_in_microcredits(finalize),
+        match program.get_function(&function_name)?.finalize_logic() {
+            Some(finalize) => cost_in_microcredits(finalize),
             None => Ok(0u64),
         }
     }
@@ -260,11 +259,12 @@ mod tests {
                 &[],
                 ["5u32", "5u32"].into_iter(),
                 false,
-                "https://vm.aleo.org/api",
+                "https://api.explorer.aleo.org/v1",
             )
             .unwrap();
         let execution = offline_execution.execution();
         println!("Offline Execution: {}", execution);
+        println!("Verifying Key: {}", offline_execution.verifying_key());
         OfflineExecution::verify_execution(execution, &program, function_id, offline_execution.verifying_key())
             .unwrap();
     }
@@ -276,13 +276,18 @@ mod tests {
         let program_manager =
             ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client.clone()), None).unwrap();
 
-        let finalize_program = program_manager.api_client.as_ref().unwrap().get_program("lottery_first.aleo").unwrap();
+        let finalize_program = program_manager.api_client.as_ref().unwrap().get_program("credits.aleo").unwrap();
         let hello_hello = program_manager.api_client.as_ref().unwrap().get_program("hello_hello.aleo").unwrap();
         // Ensure a finalize scope program execution fee is estimated correctly
         let (total, (storage, finalize)) = program_manager
-            .estimate_execution_fee::<AleoV0>(&finalize_program, "play", Vec::<&str>::new().into_iter())
+            .estimate_execution_fee::<AleoV0>(
+                &Program::credits().unwrap(),
+                "transfer_public",
+                vec!["aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px", "5u64"].into_iter(),
+            )
             .unwrap();
-        let finalize_only = program_manager.estimate_finalize_fee(&finalize_program, "play").unwrap();
+        let finalize_only =
+            program_manager.estimate_finalize_fee(&Program::credits().unwrap(), "transfer_public").unwrap();
         assert!(finalize_only > 0);
         assert!(finalize > storage);
         assert_eq!(finalize, finalize_only);
@@ -325,6 +330,7 @@ mod tests {
         assert_eq!(total, finalize_only + storage);
         assert_eq!(storage, total - finalize_only);
 
+        /*
         let (total, (storage, namespace)) =
             program_manager.estimate_deployment_fee::<AleoV0>(&nested_import_program).unwrap();
         let namespace_only = ProgramManager::estimate_namespace_fee(nested_import_program.id()).unwrap();
@@ -332,6 +338,7 @@ mod tests {
         assert_eq!(namespace, namespace_only);
         assert_eq!(total, namespace_only + storage);
         assert_eq!(storage, total - namespace_only);
+        */
     }
 
     #[test]

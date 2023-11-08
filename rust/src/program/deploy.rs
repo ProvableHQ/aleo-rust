@@ -15,6 +15,7 @@
 // along with the Aleo SDK library. If not, see <https://www.gnu.org/licenses/>.
 
 use super::*;
+use rand::thread_rng;
 
 impl<N: Network> ProgramManager<N> {
     /// Deploy a program to the network
@@ -139,7 +140,7 @@ impl<N: Network> ProgramManager<N> {
         let vm = Self::initialize_vm(api_client, program, false)?;
 
         // Create the deployment transaction
-        vm.deploy(private_key, program, (fee_record, priority_fee), Some(query), rng)
+        vm.deploy(private_key, program, Some(fee_record), priority_fee, Some(query), rng)
     }
 
     /// Estimate deployment fee for a program in microcredits. The result will be in the form
@@ -147,10 +148,22 @@ impl<N: Network> ProgramManager<N> {
     ///
     /// Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
     pub fn estimate_deployment_fee<A: Aleo<Network = N>>(&self, program: &Program<N>) -> Result<(u64, (u64, u64))> {
-        let vm = Self::initialize_vm(self.api_client()?, program, false)?;
-        let deployment = vm.deploy_raw(program, &mut rand::thread_rng())?;
-        let (minimum_deployment_cost, (storage_cost, namespace_cost)) = deployment_cost::<N>(&deployment)?;
-        Ok((minimum_deployment_cost, (storage_cost, namespace_cost)))
+        let mut process_native = Process::<N>::load()?;
+        let process = &mut process_native;
+
+        let programs = self.find_program_imports(program)?;
+        programs.iter().try_for_each(|program| {
+            process.add_program(program)?;
+            Ok::<_, Error>(())
+        })?;
+        let deployment = process.deploy::<A, _>(program, &mut thread_rng())?;
+        if deployment.program().functions().is_empty() {
+            bail!("❌ Program has no functions, cannot estimate deployment fee");
+        }
+
+        let (minimum_deployment_cost, (cost_1, cost_2)) = deployment_cost::<N>(&deployment)?;
+
+        Ok((minimum_deployment_cost, (cost_1, cost_2)))
     }
 
     /// Estimate the component of the deployment cost derived from the program name. Note that this
