@@ -28,7 +28,7 @@ impl<N: Network> ProgramManager<N> {
         transfer_type: TransferType,
         password: Option<&str>,
         amount_record: Option<Record<N, Plaintext<N>>>,
-        fee_record: Record<N, Plaintext<N>>,
+        fee_record: Option<Record<N, Plaintext<N>>>,
     ) -> Result<String> {
         // Ensure records provided have enough credits to cover the transfer amount and fee
         if let Some(amount_record) = amount_record.as_ref() {
@@ -37,7 +37,9 @@ impl<N: Network> ProgramManager<N> {
                 "Credits in amount record must greater than transfer amount specified"
             );
         }
-        ensure!(fee_record.microcredits()? >= fee, "Fee must be greater than the fee specified in the record");
+        if let Some(fee_record) = fee_record.as_ref() {
+            ensure!(fee_record.microcredits()? >= fee, "Credits in fee record must greater than fee specified");
+        }
 
         // Specify the network state query
         let query = Query::from(self.api_client.as_ref().unwrap().base_url());
@@ -100,7 +102,7 @@ impl<N: Network> ProgramManager<N> {
                 &private_key,
                 ("credits.aleo", transfer_function),
                 inputs.iter(),
-                Some(fee_record),
+                fee_record,
                 fee,
                 Some(query),
                 rng,
@@ -129,13 +131,13 @@ mod tests {
         println!("Attempting to transfer of type: {visibility:?} of {amount} to {recipient:?}");
         let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3030");
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(*sender), None, Some(api_client.clone()), None).unwrap();
+            ProgramManager::<Testnet3>::new(Some(*sender), None, Some(api_client.clone()), None, false).unwrap();
         let record_finder = RecordFinder::new(api_client);
         let fee = 5_000_000;
         for i in 0..10 {
             let (amount_record, fee_record) = match &visibility {
                 TransferType::Public => {
-                    let fee_record = record_finder.find_one_record(sender, fee);
+                    let fee_record = record_finder.find_one_record(sender, fee, None);
                     if fee_record.is_err() {
                         println!("Record not found: {} - retrying", fee_record.unwrap_err());
                         thread::sleep(std::time::Duration::from_secs(3));
@@ -147,7 +149,7 @@ mod tests {
                     (None, fee_record.unwrap())
                 }
                 TransferType::PublicToPrivate => {
-                    let fee_record = record_finder.find_one_record(sender, fee);
+                    let fee_record = record_finder.find_one_record(sender, fee, None);
                     if fee_record.is_err() {
                         println!("Record not found: {} - retrying", fee_record.unwrap_err());
                         thread::sleep(std::time::Duration::from_secs(3));
@@ -170,7 +172,8 @@ mod tests {
                 }
             };
 
-            let result = program_manager.transfer(amount, fee, *recipient, visibility, None, amount_record, fee_record);
+            let result =
+                program_manager.transfer(amount, fee, *recipient, visibility, None, amount_record, Some(fee_record));
             if result.is_err() {
                 println!("Transfer error: {} - retrying", result.unwrap_err());
                 if i == 9 {

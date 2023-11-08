@@ -98,7 +98,7 @@
 //!
 //!   // Create the program manager
 //!   // (Note: An optional local directory can be provided to manage local program data)
-//!   let mut program_manager = ProgramManager::<Testnet3>::new(None, Some(private_key_ciphertext), Some(api_client), None).unwrap();
+//!   let mut program_manager = ProgramManager::<Testnet3>::new(None, Some(private_key_ciphertext), Some(api_client), None, false).unwrap();
 //!
 //!   // ------------------
 //!   // EXECUTE PROGRAM STEPS
@@ -108,11 +108,11 @@
 //!   // Set the fee for the deployment transaction (in units of microcredits)
 //!   let fee_microcredits = 300000;
 //!   // Find a record to fund the deployment fee (requires an account with a balance)
-//!   let fee_record = record_finder.find_one_record(&private_key, fee_microcredits).unwrap();
+//!   let fee_record = record_finder.find_one_record(&private_key, fee_microcredits, None).unwrap();
 //!
 //!   // Execute the function `hello` of the hello.aleo program with the arguments 5u32 and 3u32.
 //!   // Specify 0 for the fee and provide a password to decrypt the private key stored in the program manager
-//!   program_manager.execute_program("hello.aleo", "hello", ["5u32", "3u32"].into_iter(), 0, fee_record, Some("password")).unwrap();
+//!   program_manager.execute_program("hello.aleo", "hello", ["5u32", "3u32"].into_iter(), 0, Some(fee_record), Some("password")).unwrap();
 //!
 //!   // ------------------
 //!   // DEPLOY PROGRAM STEPS
@@ -135,9 +135,9 @@
 //!   // Set the fee for the deployment transaction (in units of microcredits)
 //!   let fee_microcredits = 300000;
 //!   // Find a record to fund the deployment fee (requires an account with a balance)
-//!   let fee_record = record_finder.find_one_record(&private_key, fee_microcredits).unwrap();
+//!   let fee_record = record_finder.find_one_record(&private_key, fee_microcredits, None).unwrap();
 //!   // Deploy the program to the network
-//!   program_manager.deploy_program(program_name, fee_microcredits, fee_record, Some("password")).unwrap();
+//!   program_manager.deploy_program(program_name, fee_microcredits, Some(fee_record), Some("password")).unwrap();
 //!
 //!   // Wait several minutes.. then check the program exists on the network
 //!   let api_client = AleoAPIClient::<Testnet3>::testnet3();
@@ -158,7 +158,7 @@
 //!   // Find records to fund the transfer
 //!   let (amount_record, fee_record) = record_finder.find_amount_and_fee_records(amount, fee, &private_key).unwrap();
 //!   // Create a transfer
-//!   program_manager.transfer(amount, fee, recipient_address, TransferType::Private, Some("password"), Some(amount_record), fee_record).unwrap();
+//!   program_manager.transfer(amount, fee, recipient_address, TransferType::Private, Some("password"), Some(amount_record), Some(fee_record)).unwrap();
 //!
 //!   ```
 //! This API is currently under active development and is expected to change in the future in order
@@ -199,6 +199,7 @@ pub mod snarkvm_types {
         prelude::{ToBytes, Uniform},
         program::{
             Ciphertext,
+            Entry,
             EntryType,
             Identifier,
             Literal,
@@ -234,23 +235,14 @@ pub mod snarkvm_types {
         VM,
     };
 }
-#[cfg(feature = "full")]
-use snarkvm::{file::Manifest, package::Package};
 
 pub use snarkvm_types::*;
 
 use anyhow::{anyhow, bail, ensure, Error, Result};
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
-use snarkvm_console::program::Entry;
 #[cfg(feature = "full")]
-use std::{
-    convert::TryInto,
-    fs::File,
-    io::Read,
-    ops::{Add, Range},
-    path::PathBuf,
-};
+use std::{convert::TryInto, fs::File, io::Read, ops::Range, path::PathBuf};
 use std::{iter::FromIterator, marker::PhantomData, str::FromStr};
 
 /// A trait providing convenient methods for accessing the amount of Aleo present in a record

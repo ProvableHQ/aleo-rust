@@ -31,6 +31,9 @@ pub struct Deploy {
     /// program but will NOT deploy the program
     #[clap(long)]
     estimate_fee: bool,
+    #[clap(long)]
+    /// Use private fee
+    private_fee: bool,
     /// Directory containing the program files
     #[clap(short, long)]
     directory: Option<std::path::PathBuf>,
@@ -116,6 +119,7 @@ impl Deploy {
             self.ciphertext.clone(),
             Some(api_client.clone()),
             Some(program_directory),
+            false
         )?;
 
         // Estimate the fee if specified
@@ -150,9 +154,13 @@ impl Deploy {
                 Encryptor::decrypt_private_key_with_secret(ciphertext, self.password.as_ref().unwrap())?
             };
             let record_finder = RecordFinder::new(api_client);
-            record_finder.find_one_record(&private_key, fee_microcredits)?
+            if self.private_fee {
+                Some(record_finder.find_one_record(&private_key, fee_microcredits, None)?)
+            } else {
+                None
+            }
         } else {
-            self.record.unwrap()
+            self.record
         };
 
         // Deploy the program

@@ -21,7 +21,7 @@ edition = "2021"
 members = [ "rust", "rust/develop"]
 
 [workspace.dependencies.aleo-rust]
-version = "0.6.0"
+version = "0.6.1"
 path = "rust"
 default-features = false
 

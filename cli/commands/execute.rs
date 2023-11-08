@@ -35,6 +35,9 @@ pub struct Execute {
     /// program but will NOT execute the program
     #[clap(long)]
     estimate_fee: bool,
+    #[clap(long)]
+    /// Use private fee
+    private_fee: bool,
     /// Aleo Network peer to broadcast the transaction to
     #[clap(short, long)]
     endpoint: Option<String>,
@@ -115,6 +118,7 @@ impl Execute {
             self.ciphertext.clone(),
             Some(api_client.clone()),
             None,
+            false,
         )?;
         let program = program_manager.find_program(&self.program_id)?;
 
@@ -150,9 +154,13 @@ impl Execute {
                 Encryptor::decrypt_private_key_with_secret(ciphertext, self.password.as_ref().unwrap())?
             };
             let record_finder = RecordFinder::new(api_client);
-            record_finder.find_one_record(&private_key, fee_microcredits)?
+            if self.private_fee {
+                Some(record_finder.find_one_record(&private_key, fee_microcredits, None)?)
+            } else {
+                None
+            }
         } else {
-            self.record.unwrap()
+            self.record
         };
 
         // Execute the program function
