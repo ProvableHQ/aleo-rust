@@ -146,8 +146,11 @@ jobs:
           no_output_timeout: 30m
           command: |
             cargo install snarkos
-            snarkos start --dev 0 --beacon APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH --nodisplay 1> /dev/null &
-            sleep 120
+            snarkos start --dev 0 --validator --nodisplay 1> /dev/null &
+            snarkos start --dev 1 --validator --nodisplay 1> /dev/null &
+            snarkos start --dev 2 --validator --nodisplay 1> /dev/null &
+            snarkos start --dev 3 --validator --nodisplay 1> /dev/null &
+            sleep 480
             cd rust
             cargo test test_mappings_query -- --ignored --nocapture --test-threads=1
             cargo test test_transfer_roundtrip -- --ignored --nocapture --test-threads=1
