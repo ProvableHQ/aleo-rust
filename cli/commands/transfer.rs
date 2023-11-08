@@ -118,7 +118,7 @@ impl Transfer {
             self.ciphertext.clone(),
             Some(api_client.clone()),
             None,
-            false
+            false,
         )?;
 
         // Find the input records from the Aleo Network if not provided

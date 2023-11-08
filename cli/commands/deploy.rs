@@ -119,7 +119,7 @@ impl Deploy {
             self.ciphertext.clone(),
             Some(api_client.clone()),
             Some(program_directory),
-            false
+            false,
         )?;
 
         // Estimate the fee if specified
