@@ -173,6 +173,19 @@ impl<N: Network> ProgramManager<N> {
 
         // Initialize the VM
         if let Some(vm) = vm {
+            let credits_id = ProgramID::<N>::from_str("credits.aleo")?;
+            api_client.get_program_imports_from_source(program)?.iter().try_for_each(|(_, import)| {
+                if import.id() != &credits_id && !vm.process().read().contains_program(import.id()) {
+                    vm.process().write().add_program(import)?
+                }
+                Ok::<_, Error>(())
+            })?;
+
+            // If the initialization is for an execution, add the program. Otherwise, don't add it as
+            // it will be added during the deployment process
+            if !vm.process().read().contains_program(program.id()) {
+                vm.process().write().add_program(program)?;
+            }
             vm.execute(private_key, (program_id, function_name), inputs, fee_record, priority_fee, Some(query), rng)
         } else {
             let vm = Self::initialize_vm(api_client, program, true)?;
