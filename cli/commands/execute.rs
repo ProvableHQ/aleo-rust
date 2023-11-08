@@ -263,7 +263,7 @@ mod tests {
             "--fee",
             "0.7",
             "-e",
-            "localhost:3030",
+            "localhost:3033",
         ]);
 
         assert!(execute_bad_peer.unwrap().parse().is_err());

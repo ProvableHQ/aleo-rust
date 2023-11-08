@@ -239,7 +239,7 @@ mod tests {
             "-k",
             &recipient_private_key.to_string(),
             "-e",
-            "localhost:3030",
+            "localhost:3033",
         ]);
 
         assert!(deploy_bad_peer.unwrap().parse().is_err());

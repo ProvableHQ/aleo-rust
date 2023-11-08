@@ -264,7 +264,7 @@ mod tests {
             "--fee",
             "0.7",
             "-e",
-            "localhost:3030",
+            "localhost:3033",
         ]);
 
         assert!(transfer_bad_peer.unwrap().parse().is_err());
@@ -281,7 +281,7 @@ mod tests {
             "--fee",
             "0.7",
             "-e",
-            "http://localhost:3030",
+            "http://localhost:3033",
         ]);
         assert!(transfer_zero_amount.unwrap().parse().is_err());
     }

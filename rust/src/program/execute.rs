@@ -333,7 +333,7 @@ mod tests {
         let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let encrypted_private_key =
             crate::Encryptor::encrypt_private_key_with_secret(&private_key, "password").unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3030");
+        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
         let record_finder = RecordFinder::new(api_client.clone());
         let mut program_manager =
             ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client.clone()), None, false).unwrap();

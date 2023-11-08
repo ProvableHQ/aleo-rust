@@ -129,7 +129,7 @@ mod tests {
         visibility: TransferType,
     ) {
         println!("Attempting to transfer of type: {visibility:?} of {amount} to {recipient:?}");
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3030");
+        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
         let program_manager =
             ProgramManager::<Testnet3>::new(Some(*sender), None, Some(api_client.clone()), None, false).unwrap();
         let record_finder = RecordFinder::new(api_client);
@@ -247,7 +247,7 @@ mod tests {
             PrivateKey::<Testnet3>::from_str("APrivateKey1zkp3NchSbrypyf2UoJSGyag58biAFPvtd1WtpM5M9pqoifK").unwrap();
         let public_to_private_recipient_view_key = ViewKey::try_from(&public_to_private_recipient_private_key).unwrap();
         let public_to_private_recipient_address = Address::try_from(&public_to_private_recipient_view_key).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3030");
+        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
         let public_address_literal = Literal::<Testnet3>::from_str(&public_recipient_address.to_string()).unwrap();
         let private_to_public_address_literal =
             Literal::<Testnet3>::from_str(&private_to_public_recipient_address.to_string()).unwrap();
