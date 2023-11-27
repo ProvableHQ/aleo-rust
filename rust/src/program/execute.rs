@@ -68,7 +68,7 @@ impl<N: Network> ProgramManager<N> {
 
         // Compute the trace
         let locator = Locator::new(*program_id, function_name);
-        let (response, mut trace) = vm.process().write().execute::<A>(authorization)?;
+        let (response, mut trace) = vm.process().write().execute::<A, _>(authorization, rng)?;
         trace.prepare(query)?;
         let execution = trace.prove_execution::<A, _>(&locator.to_string(), &mut rand::thread_rng())?;
 
@@ -230,7 +230,7 @@ impl<N: Network> ProgramManager<N> {
         let authorization = vm.authorize(&private_key, program_id, function_name, inputs, rng)?;
 
         let locator = Locator::new(*program_id, function_name);
-        let (_, mut trace) = vm.process().write().execute::<A>(authorization)?;
+        let (_, mut trace) = vm.process().write().execute::<A, _>(authorization, rng)?;
         trace.prepare(query)?;
         let execution = trace.prove_execution::<A, _>(&locator.to_string(), &mut rand::thread_rng())?;
         execution_cost(&vm, &execution)
