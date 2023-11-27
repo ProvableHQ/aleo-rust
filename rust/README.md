@@ -82,7 +82,7 @@ let private_key_ciphertext = Encryptor::<Testnet3>::encrypt_private_key_with_sec
 
 // Create the program manager
 // (Note: An optional local directory can be provided to manage local program data)
-let mut program_manager = ProgramManager::<Testnet3>::new(None, Some(private_key_ciphertext), Some(api_client), None).unwrap();
+let mut program_manager = ProgramManager::<Testnet3>::new(None, Some(private_key_ciphertext), Some(api_client), None, false).unwrap();
 
 // ------------------
 // EXECUTE PROGRAM STEPS

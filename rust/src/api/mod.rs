@@ -46,7 +46,7 @@ impl<N: Network> AleoAPIClient<N> {
     }
 
     pub fn testnet3() -> Self {
-        Self::new("https://vm.aleo.org/api", "testnet3").unwrap()
+        Self::new("https://api.explorer.aleo.org/v1", "testnet3").unwrap()
     }
 
     pub fn local_testnet3(port: &str) -> Self {

@@ -91,7 +91,8 @@ mod tests {
         let _ = std::fs::create_dir(&temp_dir);
 
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(temp_dir.clone())).unwrap();
+            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(temp_dir.clone()), false)
+                .unwrap();
 
         // Test that API clients works
         let api_client = program_manager.api_client().unwrap();

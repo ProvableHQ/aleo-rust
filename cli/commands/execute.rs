@@ -35,6 +35,9 @@ pub struct Execute {
     /// program but will NOT execute the program
     #[clap(long)]
     estimate_fee: bool,
+    #[clap(long)]
+    /// Use private fee
+    private_fee: bool,
     /// Aleo Network peer to broadcast the transaction to
     #[clap(short, long)]
     endpoint: Option<String>,
@@ -95,13 +98,13 @@ impl Execute {
             0u64
         };
 
-        // Setup the API client to use configured peer or default to https://vm.aleo.org/api/testnet3
+        // Setup the API client to use configured peer or default to https://api.explorer.aleo.org/v1/testnet3
         let api_client = self
             .endpoint
             .clone()
             .map_or_else(
                 || {
-                    println!("Using default peer: https://vm.aleo.org/api/testnet3");
+                    println!("Using default peer: https://api.explorer.aleo.org/v1/testnet3");
                     Ok(AleoAPIClient::<CurrentNetwork>::testnet3())
                 },
                 |peer| AleoAPIClient::<CurrentNetwork>::new(&peer, "testnet3"),
@@ -115,6 +118,7 @@ impl Execute {
             self.ciphertext.clone(),
             Some(api_client.clone()),
             None,
+            false,
         )?;
         let program = program_manager.find_program(&self.program_id)?;
 
@@ -150,9 +154,13 @@ impl Execute {
                 Encryptor::decrypt_private_key_with_secret(ciphertext, self.password.as_ref().unwrap())?
             };
             let record_finder = RecordFinder::new(api_client);
-            record_finder.find_one_record(&private_key, fee_microcredits)?
+            if self.private_fee {
+                Some(record_finder.find_one_record(&private_key, fee_microcredits, None)?)
+            } else {
+                None
+            }
         } else {
-            self.record.unwrap()
+            self.record
         };
 
         // Execute the program function
@@ -255,7 +263,7 @@ mod tests {
             "--fee",
             "0.7",
             "-e",
-            "localhost:3030",
+            "localhost:3033",
         ]);
 
         assert!(execute_bad_peer.unwrap().parse().is_err());

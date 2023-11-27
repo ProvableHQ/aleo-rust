@@ -48,6 +48,7 @@ pub struct ProgramManager<N: Network> {
     pub(crate) private_key_ciphertext: Option<Ciphertext<N>>,
     pub(crate) local_program_directory: Option<PathBuf>,
     pub(crate) api_client: Option<AleoAPIClient<N>>,
+    pub(crate) vm: Option<VM<N, ConsensusMemory<N>>>,
 }
 
 impl<N: Network> ProgramManager<N> {
@@ -59,6 +60,7 @@ impl<N: Network> ProgramManager<N> {
         private_key_ciphertext: Option<Ciphertext<N>>,
         api_client: Option<AleoAPIClient<N>>,
         local_program_directory: Option<PathBuf>,
+        use_cache: bool,
     ) -> Result<Self> {
         if private_key.is_some() && private_key_ciphertext.is_some() {
             bail!("Cannot have both private key and private key ciphertext");
@@ -66,7 +68,13 @@ impl<N: Network> ProgramManager<N> {
             bail!("Must have either private key or private key ciphertext");
         }
         let programs = IndexMap::new();
-        Ok(Self { programs, private_key, private_key_ciphertext, local_program_directory, api_client })
+        let vm = if use_cache {
+            let store = ConsensusStore::<N, ConsensusMemory<N>>::open(None)?;
+            Some(VM::<N, ConsensusMemory<N>>::from(store)?)
+        } else {
+            None
+        };
+        Ok(Self { programs, private_key, private_key_ciphertext, local_program_directory, api_client, vm })
     }
 
     /// Manually add a program to the program manager from memory if it does not already exist
@@ -171,7 +179,7 @@ mod tests {
 
         // Ensure that program manager creation fails if no key is provided
         let program_manager =
-            ProgramManager::<Testnet3>::new(None, None, Some(api_client.clone()), Some(temp_dir.clone()));
+            ProgramManager::<Testnet3>::new(None, None, Some(api_client.clone()), Some(temp_dir.clone()), false);
 
         assert!(program_manager.is_err());
 
@@ -181,19 +189,30 @@ mod tests {
             Some(private_key_ciphertext.clone()),
             Some(api_client.clone()),
             Some(temp_dir.clone()),
+            false,
         );
 
         assert!(program_manager.is_err());
 
         // Ensure program manager is created successfully if only a private key is provided
-        let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client.clone()), Some(temp_dir.clone()));
+        let program_manager = ProgramManager::<Testnet3>::new(
+            Some(private_key),
+            None,
+            Some(api_client.clone()),
+            Some(temp_dir.clone()),
+            false,
+        );
 
         assert!(program_manager.is_ok());
 
         // Ensure program manager is created successfully if only a private key ciphertext is provided
-        let program_manager =
-            ProgramManager::<Testnet3>::new(None, Some(private_key_ciphertext), Some(api_client), Some(temp_dir));
+        let program_manager = ProgramManager::<Testnet3>::new(
+            None,
+            Some(private_key_ciphertext),
+            Some(api_client),
+            Some(temp_dir),
+            false,
+        );
 
         assert!(program_manager.is_ok());
     }
@@ -201,7 +220,7 @@ mod tests {
     #[test]
     fn test_program_management_methods() {
         let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let mut program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, None, None).unwrap();
+        let mut program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, None, None, false).unwrap();
 
         // Test program addition
         let program = Program::<Testnet3>::from_str(HELLO_PROGRAM).unwrap();
@@ -229,9 +248,14 @@ mod tests {
         let temp_dir = std::env::temp_dir();
         let api_client = AleoAPIClient::<Testnet3>::testnet3();
 
-        let program_manager =
-            ProgramManager::<Testnet3>::new(None, Some(private_key_ciphertext), Some(api_client), Some(temp_dir))
-                .unwrap();
+        let program_manager = ProgramManager::<Testnet3>::new(
+            None,
+            Some(private_key_ciphertext),
+            Some(api_client),
+            Some(temp_dir),
+            false,
+        )
+        .unwrap();
 
         // Assert private key recovers correctly
         let recovered_private_key = program_manager.get_private_key(Some("password")).unwrap();
@@ -253,7 +277,7 @@ mod tests {
         let api_client = AleoAPIClient::<Testnet3>::testnet3();
 
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(temp_dir)).unwrap();
+            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(temp_dir), false).unwrap();
 
         // Assert private key recovers correctly regardless of password
         let recovered_private_key = program_manager.get_private_key(None).unwrap();

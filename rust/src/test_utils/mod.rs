@@ -216,7 +216,7 @@ pub fn transfer_to_test_account(
     let record_finder = RecordFinder::<Testnet3>::new(api_client.clone());
 
     let program_manager =
-        ProgramManager::<Testnet3>::new(Some(beacon_private_key), None, Some(api_client), None).unwrap();
+        ProgramManager::<Testnet3>::new(Some(beacon_private_key), None, Some(api_client), None, false).unwrap();
 
     let fee = 500_000;
     let mut transfer_successes = 0;
@@ -237,7 +237,7 @@ pub fn transfer_to_test_account(
             TransferType::Private,
             None,
             Some(input_record),
-            fee_record,
+            Some(fee_record),
         );
         if result.is_ok() {
             println!("Transfer succeeded");

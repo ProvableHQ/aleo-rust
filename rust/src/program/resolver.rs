@@ -112,7 +112,7 @@ mod tests {
         let result = catch_unwind(|| {
             // Create a program manager with file system access only
             let program_manager =
-                ProgramManager::<Testnet3>::new(Some(private_key), None, None, Some(test_path.clone())).unwrap();
+                ProgramManager::<Testnet3>::new(Some(private_key), None, None, Some(test_path.clone()), false).unwrap();
 
             // TEST 1: Test that the program manager can load a program from a file.
             let program_id = ProgramID::<Testnet3>::from_str("aleo_test.aleo").unwrap();
@@ -161,9 +161,14 @@ mod tests {
         let result = catch_unwind(|| {
             // Create a program manager with file system and network access
             let api_client = AleoAPIClient::<Testnet3>::testnet3();
-            let program_manager =
-                ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(test_path.clone()))
-                    .unwrap();
+            let program_manager = ProgramManager::<Testnet3>::new(
+                Some(private_key),
+                None,
+                Some(api_client),
+                Some(test_path.clone()),
+                false,
+            )
+            .unwrap();
 
             // TEST 1: Test that the program manager can load a program on disk that can't be found online
             let program_id = ProgramID::<Testnet3>::from_str("aleo_test.aleo").unwrap();
@@ -213,7 +218,8 @@ mod tests {
         // Create a program manager with network access only
         let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let api_client = AleoAPIClient::<Testnet3>::testnet3();
-        let program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None).unwrap();
+        let program_manager =
+            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
         let program_id = ProgramID::<Testnet3>::from_str("credits.aleo").unwrap();
         let credits_off_the_chain = Program::<Testnet3>::credits().unwrap();
         let credits_on_the_chain = program_manager.find_program_on_chain(&program_id).unwrap();
@@ -226,7 +232,8 @@ mod tests {
         // Create a program manager with network access only
         let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let api_client = AleoAPIClient::<Testnet3>::testnet3();
-        let program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None).unwrap();
+        let program_manager =
+            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
 
         // Ensure we can find program imports when the program is on chain
         let test_program = Program::<Testnet3>::from_str(IMPORT_PROGRAM).unwrap();
@@ -248,7 +255,8 @@ mod tests {
         let api_client = AleoAPIClient::<Testnet3>::testnet3();
 
         // Create a program manager with network access only
-        let program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None).unwrap();
+        let program_manager =
+            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
 
         // Ensure the program is not on chain
         let program_id = ProgramID::<Testnet3>::from_str(&random_program).unwrap();
@@ -260,7 +268,8 @@ mod tests {
         // Create program manager with only network access
         let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let api_client = AleoAPIClient::<Testnet3>::testnet3();
-        let program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None).unwrap();
+        let program_manager =
+            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
 
         // Create a bad program with a non-existent import
         let bad_import_code = String::from("import ").add(&random_program_id(16)).add(";").add(IMPORT_PROGRAM);
