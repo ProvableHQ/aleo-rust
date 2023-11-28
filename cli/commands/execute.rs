@@ -172,6 +172,7 @@ impl Execute {
             fee_microcredits,
             fee_record,
             self.password.as_deref(),
+            None,
         );
 
         // Inform the user of the result of the program execution

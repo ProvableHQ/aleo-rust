@@ -39,7 +39,7 @@ dependencies = [
 
 [[package]]
 name = "aleo"
-version = "0.6.3"
+version = "0.6.4"
 dependencies = [
  "aleo-rust",
  "anyhow",
@@ -86,7 +86,7 @@ dependencies = [
 
 [[package]]
 name = "aleo-rust"
-version = "0.6.3"
+version = "0.6.4"
 dependencies = [
  "anyhow",
  "bencher",
