@@ -156,6 +156,10 @@ impl<N: Network> ProgramManager<N> {
         };
         bail!("Private key configuration error")
     }
+    
+    pub fn vm(&self) -> &Option<VM<N, ConsensusMemory<N>>> {
+        &self.vm
+    }
 }
 
 #[cfg(test)]
