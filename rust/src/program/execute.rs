@@ -91,7 +91,7 @@ impl<N: Network> ProgramManager<N> {
     ///
     /// To run this function successfully, the program must already be deployed on the Aleo Network
     pub fn execute_program(
-        &mut self,
+        &self,
         program_id: impl TryInto<ProgramID<N>>,
         function: impl TryInto<Identifier<N>>,
         inputs: impl ExactSizeIterator<Item = impl TryInto<Value<N>>>,
@@ -335,7 +335,7 @@ mod tests {
             crate::Encryptor::encrypt_private_key_with_secret(&private_key, "password").unwrap();
         let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
         let record_finder = RecordFinder::new(api_client.clone());
-        let mut program_manager =
+        let program_manager =
             ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client.clone()), None, false).unwrap();
 
         let fee = 2_500_000;
@@ -363,7 +363,7 @@ mod tests {
         }
 
         // Test programs can be executed with an encrypted private key
-        let mut program_manager =
+        let program_manager =
             ProgramManager::<Testnet3>::new(None, Some(encrypted_private_key), Some(api_client), None, false).unwrap();
 
         for i in 0..5 {
@@ -433,7 +433,7 @@ mod tests {
             Record::<Testnet3, Plaintext<Testnet3>>::from_str(RECORD_2000000001_MICROCREDITS).unwrap();
 
         // Ensure that program manager creation fails if no key is provided
-        let mut program_manager =
+        let program_manager =
             ProgramManager::<Testnet3>::new(Some(recipient_private_key), None, Some(api_client), None, false).unwrap();
 
         // Assert that execution fails if record's available microcredits are below the fee

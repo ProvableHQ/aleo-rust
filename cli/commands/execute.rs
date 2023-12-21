@@ -113,7 +113,7 @@ impl Execute {
 
         // Create the program manager and find the program
         println!("Attempting to find program: {}", program_string.bright_blue());
-        let mut program_manager = ProgramManager::<CurrentNetwork>::new(
+        let program_manager = ProgramManager::<CurrentNetwork>::new(
             self.private_key,
             self.ciphertext.clone(),
             Some(api_client.clone()),
