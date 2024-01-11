@@ -98,6 +98,7 @@ impl<N: Network> ProgramManager<N> {
         priority_fee: u64,
         fee_record: Option<Record<N, Plaintext<N>>>,
         password: Option<&str>,
+        private_key: Option<&PrivateKey<N>>,
     ) -> Result<String> {
         // Ensure a network client is set, otherwise online execution is not possible
         ensure!(
@@ -109,15 +110,19 @@ impl<N: Network> ProgramManager<N> {
         let program_id = program_id.try_into().map_err(|_| anyhow!("Invalid program ID"))?;
         let function_id = function.try_into().map_err(|_| anyhow!("Invalid function name"))?;
         let function_name = function_id.to_string();
+        let api_client = self.api_client()?;
 
         // Get the program from chain, error if it doesn't exist
         let program = self
-            .api_client()?
             .get_program(program_id)
-            .map_err(|_| anyhow!("Program {program_id:?} does not exist on the Aleo Network. Try deploying the program first before executing."))?;
+            .or_else(|_| api_client.get_program(program_id))?;
+
 
         // Create the execution transaction
-        let private_key = self.get_private_key(password)?;
+        let private_key = private_key.map_or_else(
+            || { self.get_private_key(password) },
+            |private_key| Ok(*private_key),
+        )?;
         let node_url = self.api_client.as_ref().unwrap().base_url().to_string();
         let transaction = Self::create_execute_transaction(
             &private_key,
@@ -352,6 +357,7 @@ mod tests {
                 fee,
                 Some(fee_record),
                 None,
+                None,
             );
             println!("{:?}", execution);
 
@@ -376,6 +382,7 @@ mod tests {
                 fee,
                 Some(fee_record),
                 Some("password"),
+                None,
             );
             if execution.is_ok() {
                 break;
@@ -395,6 +402,7 @@ mod tests {
                 finalize_fee,
                 Some(fee_record),
                 Some("password"),
+                None,
             );
             if execution.is_ok() {
                 break;
@@ -414,6 +422,7 @@ mod tests {
                 finalize_fee,
                 Some(fee_record),
                 Some("password"),
+                None,
             );
             if execution.is_ok() {
                 break;
@@ -444,6 +453,7 @@ mod tests {
             500000,
             Some(record_5_microcredits),
             None,
+            None,
         );
 
         assert!(execution.is_err());
@@ -455,6 +465,7 @@ mod tests {
             ["5u32", "6u32"].into_iter(),
             200,
             Some(record_2000000001_microcredits.clone()),
+            None,
             None,
         );
 
@@ -469,6 +480,7 @@ mod tests {
             500000,
             Some(record_2000000001_microcredits.clone()),
             None,
+            None,
         );
 
         assert!(execution.is_err());
@@ -481,6 +493,7 @@ mod tests {
             500000,
             Some(record_2000000001_microcredits.clone()),
             None,
+            None,
         );
 
         assert!(execution.is_err());
@@ -492,6 +505,7 @@ mod tests {
             ["5u32", "6u32"].into_iter(),
             500000,
             Some(record_2000000001_microcredits),
+            None,
             None,
         );
 

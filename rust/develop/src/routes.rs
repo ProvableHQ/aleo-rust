@@ -153,6 +153,7 @@ impl<N: Network> Rest<N> {
             request.fee,
             fee_record,
             None,
+            None,
         ))?;
 
         Ok(reply::json(&transaction_id))
