@@ -52,25 +52,39 @@ version = "2.7.1"
 version = "1"
 
 [dependencies.snarkvm]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 optional = true
 workspace = true
 
 [dependencies.snarkvm-circuit-network]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 workspace = true
 
 [dependencies.snarkvm-console]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 workspace = true
 
 [dependencies.snarkvm-ledger-store]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 workspace = true
 
 [dependencies.snarkvm-ledger-query]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 workspace = true
 
 [dependencies.snarkvm-ledger-block]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 workspace = true
 
 [dependencies.snarkvm-synthesizer]
+git = "https://github.com/AleoHQ/snarkVM.git"
+branch = "vicsn/stress_test_1"
 workspace = true
 
 [dependencies.getrandom]
