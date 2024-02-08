@@ -158,7 +158,7 @@ impl<N: Network> ProgramManager<N> {
         let rng = &mut rand::thread_rng();
         let private_key = PrivateKey::<N>::new(rng)?;
         let deployment = vm.deploy(&private_key, program, None, 0u64, None, rng)?;
-        let (minimum_deployment_cost, (storage_cost, namespace_cost, third_element)) =
+        let (minimum_deployment_cost, (storage_cost, namespace_cost)) =
             deployment_cost::<N>(deployment.deployment().ok_or(anyhow!("Deployment failed"))?)?;
         Ok((minimum_deployment_cost, (storage_cost, namespace_cost)))
     }

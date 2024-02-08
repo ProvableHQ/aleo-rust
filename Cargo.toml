@@ -27,39 +27,39 @@ default-features = false
 
 [workspace.dependencies.snarkvm]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-circuit-network]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-console]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-console-network]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-synthesizer]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-ledger-block]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-ledger-store]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-ledger-query]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [workspace.dependencies.snarkvm-wasm]
 git = "https://github.com/AleoHQ/snarkVM.git"
-branch = "vicsn/stress_test_1"
+branch = "vicsn/stress_test_2"
 
 [lib]
 path = "cli/lib.rs"
