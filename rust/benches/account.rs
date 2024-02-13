@@ -18,7 +18,7 @@
 extern crate bencher;
 use snarkvm_console::{
     account::{Address, PrivateKey},
-    network::Testnet3,
+    network::MainnetV0,
 };
 
 use bencher::Bencher;
@@ -33,17 +33,17 @@ fn testnet3_private_key_new(bench: &mut Bencher) {
     let rng = &mut ChaChaRng::seed_from_u64(SEED);
 
     bench.iter(|| {
-        let _private_key = PrivateKey::<Testnet3>::new(rng).unwrap();
+        let _private_key = PrivateKey::<MainnetV0>::new(rng).unwrap();
     })
 }
 
 // Bench address generation
 fn testnet3_address_from_private_key(bench: &mut Bencher) {
     let rng = &mut ChaChaRng::seed_from_u64(SEED);
-    let private_key = PrivateKey::<Testnet3>::new(rng).unwrap();
+    let private_key = PrivateKey::<MainnetV0>::new(rng).unwrap();
 
     bench.iter(|| {
-        let _address = Address::<Testnet3>::try_from(private_key).unwrap();
+        let _address = Address::<MainnetV0>::try_from(private_key).unwrap();
     })
 }
 

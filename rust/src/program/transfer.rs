@@ -117,21 +117,21 @@ impl<N: Network> ProgramManager<N> {
 mod tests {
     use super::*;
     use crate::{test_utils::BEACON_PRIVATE_KEY, AleoAPIClient, RecordFinder};
-    use snarkvm_console::network::Testnet3;
+    use snarkvm_console::network::MainnetV0;
 
     use std::{str::FromStr, thread};
 
     // Attempt to transfer the specified amount from the sender to the recipient.
     fn try_transfer(
-        sender: &PrivateKey<Testnet3>,
-        recipient: &Address<Testnet3>,
+        sender: &PrivateKey<MainnetV0>,
+        recipient: &Address<MainnetV0>,
         amount: u64,
         visibility: TransferType,
     ) {
         println!("Attempting to transfer of type: {visibility:?} of {amount} to {recipient:?}");
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
+        let api_client = AleoAPIClient::<MainnetV0>::local_testnet3("3033");
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(*sender), None, Some(api_client.clone()), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(*sender), None, Some(api_client.clone()), None, false).unwrap();
         let record_finder = RecordFinder::new(api_client);
         let fee = 5_000_000;
         for i in 0..10 {
@@ -188,8 +188,8 @@ mod tests {
     // Check that the specified amount has been transferred from the sender to the recipient.
     fn verify_transfer(
         amount: u64,
-        api_client: &AleoAPIClient<Testnet3>,
-        recipient_private_key: &PrivateKey<Testnet3>,
+        api_client: &AleoAPIClient<MainnetV0>,
+        recipient_private_key: &PrivateKey<MainnetV0>,
         visibility: TransferType,
     ) {
         for i in 0..10 {
@@ -226,33 +226,33 @@ mod tests {
     fn test_transfer_roundtrip() {
         // Initialize necessary key material
         // Use the beacon private key to make the initial transfer
-        let beacon_private_key = PrivateKey::<Testnet3>::from_str(BEACON_PRIVATE_KEY).unwrap();
+        let beacon_private_key = PrivateKey::<MainnetV0>::from_str(BEACON_PRIVATE_KEY).unwrap();
         let amount = 16_666_666;
         let amount_str = "16666666u64";
         let fee = 26_666_666;
         // Create a unique recipient for each transfer type so we can unique identify each transfer
         let private_recipient_private_key =
-            PrivateKey::<Testnet3>::from_str("APrivateKey1zkpCF24vGLohfHWNZam1z7qDhDq5Bp1u8WPFhh9q2wWoNh8").unwrap();
+            PrivateKey::<MainnetV0>::from_str("APrivateKey1zkpCF24vGLohfHWNZam1z7qDhDq5Bp1u8WPFhh9q2wWoNh8").unwrap();
         let private_recipient_view_key = ViewKey::try_from(&private_recipient_private_key).unwrap();
         let private_recipient_address = Address::try_from(&private_recipient_view_key).unwrap();
         let private_to_public_recipient_private_key =
-            PrivateKey::<Testnet3>::from_str("APrivateKey1zkpFkojCEFsw3LaozkqaVkMuxdTq2DEsUV88WGexXoWGuNA").unwrap();
+            PrivateKey::<MainnetV0>::from_str("APrivateKey1zkpFkojCEFsw3LaozkqaVkMuxdTq2DEsUV88WGexXoWGuNA").unwrap();
         let private_to_public_recipient_view_key = ViewKey::try_from(&private_to_public_recipient_private_key).unwrap();
         let private_to_public_recipient_address = Address::try_from(&private_to_public_recipient_view_key).unwrap();
         let public_recipient_private_key =
-            PrivateKey::<Testnet3>::from_str("APrivateKey1zkp6rwhE5Jxz16cv32kM8Z8VMsLe78BCK8LU3FM7htmSsis").unwrap();
+            PrivateKey::<MainnetV0>::from_str("APrivateKey1zkp6rwhE5Jxz16cv32kM8Z8VMsLe78BCK8LU3FM7htmSsis").unwrap();
         let public_recipient_view_key = ViewKey::try_from(&public_recipient_private_key).unwrap();
         let public_recipient_address = Address::try_from(&public_recipient_view_key).unwrap();
         let public_to_private_recipient_private_key =
-            PrivateKey::<Testnet3>::from_str("APrivateKey1zkp3NchSbrypyf2UoJSGyag58biAFPvtd1WtpM5M9pqoifK").unwrap();
+            PrivateKey::<MainnetV0>::from_str("APrivateKey1zkp3NchSbrypyf2UoJSGyag58biAFPvtd1WtpM5M9pqoifK").unwrap();
         let public_to_private_recipient_view_key = ViewKey::try_from(&public_to_private_recipient_private_key).unwrap();
         let public_to_private_recipient_address = Address::try_from(&public_to_private_recipient_view_key).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
-        let public_address_literal = Literal::<Testnet3>::from_str(&public_recipient_address.to_string()).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::local_testnet3("3033");
+        let public_address_literal = Literal::<MainnetV0>::from_str(&public_recipient_address.to_string()).unwrap();
         let private_to_public_address_literal =
-            Literal::<Testnet3>::from_str(&private_to_public_recipient_address.to_string()).unwrap();
-        let expected_value = Value::from(Plaintext::<Testnet3>::from_str(amount_str).unwrap());
-        let zero_value = Value::from(Plaintext::<Testnet3>::from_str("0u64").unwrap());
+            Literal::<MainnetV0>::from_str(&private_to_public_recipient_address.to_string()).unwrap();
+        let expected_value = Value::from(Plaintext::<MainnetV0>::from_str(amount_str).unwrap());
+        let zero_value = Value::from(Plaintext::<MainnetV0>::from_str("0u64").unwrap());
 
         println!("Private recipient private_key: {}", private_recipient_private_key);
         println!("Private recipient address: {}", private_recipient_address);

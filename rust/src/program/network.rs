@@ -77,21 +77,21 @@ mod tests {
         test_utils::{random_program, GENERIC_PROGRAM_BODY, RECIPIENT_PRIVATE_KEY},
         AleoAPIClient,
     };
-    use snarkvm_console::{account::PrivateKey, network::Testnet3};
+    use snarkvm_console::{account::PrivateKey, network::MainnetV0};
 
     use std::{ops::Add, str::FromStr};
 
     #[test]
     fn test_network_functionality_works_as_expected() {
-        let credits = snarkvm::synthesizer::Program::<Testnet3>::credits().unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let credits = snarkvm::synthesizer::Program::<MainnetV0>::credits().unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         // Create a temp dir without proper programs to test that the hybrid client works even if the local resource directory doesn't exist
         let temp_dir = std::env::temp_dir().join("no_op");
         let _ = std::fs::create_dir(&temp_dir);
 
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(temp_dir.clone()), false)
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client), Some(temp_dir.clone()), false)
                 .unwrap();
 
         // Test that API clients works
@@ -112,7 +112,7 @@ mod tests {
         // Test on_chain_program_state() identifies when a program is deployed but different from
         // the local version
         let wrong_hello_program_string = String::from("program credits.aleo;\n").add(GENERIC_PROGRAM_BODY);
-        let wrong_hello_program = Program::<Testnet3>::from_str(&wrong_hello_program_string).unwrap();
+        let wrong_hello_program = Program::<MainnetV0>::from_str(&wrong_hello_program_string).unwrap();
         let state_mismatch = program_manager.on_chain_program_state(&wrong_hello_program).unwrap();
 
         assert!(matches!(state_mismatch, OnChainProgramState::Different));

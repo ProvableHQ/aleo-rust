@@ -49,7 +49,7 @@ pub enum Command {
         /// `private key` to create program deployment and execution transactions on
         /// the Aleo Network.
         #[clap(short, long)]
-        key_ciphertext: Option<Ciphertext<Testnet3>>,
+        key_ciphertext: Option<Ciphertext<MainnetV0>>,
         /// Uri and port the development server will listen on [default: 0.0.0.0:4040]
         #[clap(short = 'a', long)]
         server_address: Option<SocketAddr>,
@@ -68,7 +68,7 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn parse(self) -> Result<Rest<Testnet3>> {
+    pub fn parse(self) -> Result<Rest<MainnetV0>> {
         match self {
             Command::Start { server_address, key_ciphertext: key, peer, debug } => {
                 Rest::initialize(server_address, key, peer, debug)

@@ -155,7 +155,7 @@ use snarkvm::{
         account::{Address, PrivateKey},
         program::{Ciphertext, Identifier, Plaintext, ProgramID, Record},
     },
-    prelude::{Network, Testnet3},
+    prelude::{Network, MainnetV0},
     synthesizer::Program,
 };
 use tracing_subscriber::fmt;

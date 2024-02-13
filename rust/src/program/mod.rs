@@ -174,21 +174,21 @@ mod tests {
 
     #[test]
     fn test_constructors_fail_with_multiple_keys_or_no_keys() {
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let private_key_ciphertext =
-            Encryptor::<Testnet3>::encrypt_private_key_with_secret(&private_key, "password").unwrap();
+            Encryptor::<MainnetV0>::encrypt_private_key_with_secret(&private_key, "password").unwrap();
         // Create a temp dir without proper programs to test that the hybrid client works even if the local resource directory doesn't exist
         let temp_dir = std::env::temp_dir();
 
         // Ensure that program manager creation fails if no key is provided
         let program_manager =
-            ProgramManager::<Testnet3>::new(None, None, Some(api_client.clone()), Some(temp_dir.clone()), false);
+            ProgramManager::<MainnetV0>::new(None, None, Some(api_client.clone()), Some(temp_dir.clone()), false);
 
         assert!(program_manager.is_err());
 
         // Ensure that program manager creation fails if both key and key ciphertext are provided
-        let program_manager = ProgramManager::<Testnet3>::new(
+        let program_manager = ProgramManager::<MainnetV0>::new(
             Some(private_key),
             Some(private_key_ciphertext.clone()),
             Some(api_client.clone()),
@@ -199,7 +199,7 @@ mod tests {
         assert!(program_manager.is_err());
 
         // Ensure program manager is created successfully if only a private key is provided
-        let program_manager = ProgramManager::<Testnet3>::new(
+        let program_manager = ProgramManager::<MainnetV0>::new(
             Some(private_key),
             None,
             Some(api_client.clone()),
@@ -210,7 +210,7 @@ mod tests {
         assert!(program_manager.is_ok());
 
         // Ensure program manager is created successfully if only a private key ciphertext is provided
-        let program_manager = ProgramManager::<Testnet3>::new(
+        let program_manager = ProgramManager::<MainnetV0>::new(
             None,
             Some(private_key_ciphertext),
             Some(api_client),
@@ -223,11 +223,11 @@ mod tests {
 
     #[test]
     fn test_program_management_methods() {
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let mut program_manager = ProgramManager::<Testnet3>::new(Some(private_key), None, None, None, false).unwrap();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let mut program_manager = ProgramManager::<MainnetV0>::new(Some(private_key), None, None, None, false).unwrap();
 
         // Test program addition
-        let program = Program::<Testnet3>::from_str(HELLO_PROGRAM).unwrap();
+        let program = Program::<MainnetV0>::from_str(HELLO_PROGRAM).unwrap();
         assert!(!program_manager.contains_program(program.id()).unwrap());
         program_manager.add_program(&program).unwrap();
         assert!(program_manager.contains_program(program.id()).unwrap());
@@ -237,7 +237,7 @@ mod tests {
         assert!(program_manager.add_program(&program).is_err());
 
         // Test program update methods
-        let program_2 = Program::<Testnet3>::from_str(HELLO_PROGRAM_2).unwrap();
+        let program_2 = Program::<MainnetV0>::from_str(HELLO_PROGRAM_2).unwrap();
         let replaced_program = program_manager.update_program(&program_2).unwrap();
         let retrieved_program = program_manager.get_program(program.id()).unwrap();
         assert_eq!(replaced_program, program);
@@ -248,11 +248,11 @@ mod tests {
     fn test_private_key_retrieval_from_ciphertext() {
         let private_key = PrivateKey::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let private_key_ciphertext =
-            Encryptor::<Testnet3>::encrypt_private_key_with_secret(&private_key, "password").unwrap();
+            Encryptor::<MainnetV0>::encrypt_private_key_with_secret(&private_key, "password").unwrap();
         let temp_dir = std::env::temp_dir();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
 
-        let program_manager = ProgramManager::<Testnet3>::new(
+        let program_manager = ProgramManager::<MainnetV0>::new(
             None,
             Some(private_key_ciphertext),
             Some(api_client),
@@ -276,12 +276,12 @@ mod tests {
 
     #[test]
     fn test_private_key_retrieval_from_plaintext() {
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let temp_dir = std::env::temp_dir();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
 
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), Some(temp_dir), false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client), Some(temp_dir), false).unwrap();
 
         // Assert private key recovers correctly regardless of password
         let recovered_private_key = program_manager.get_private_key(None).unwrap();
@@ -293,13 +293,13 @@ mod tests {
 
     #[test]
     fn test_import_resolution() {
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
         let top_level_program = api_client.get_program("imported_add_mul.aleo").unwrap();
         let add_program = api_client.get_program("addition_test.aleo").unwrap();
         let multiply_program = api_client.get_program("multiply_test.aleo").unwrap();
         let double_program = api_client.get_program("double_test.aleo").unwrap();
-        let vm_execute = ProgramManager::<Testnet3>::initialize_vm(&api_client, &top_level_program, true).unwrap();
-        let vm_deploy = ProgramManager::<Testnet3>::initialize_vm(&api_client, &top_level_program, false).unwrap();
+        let vm_execute = ProgramManager::<MainnetV0>::initialize_vm(&api_client, &top_level_program, true).unwrap();
+        let vm_deploy = ProgramManager::<MainnetV0>::initialize_vm(&api_client, &top_level_program, false).unwrap();
 
         // Ensure the initialization contained all imported programs
         let top_program = vm_execute.process().read().get_program("imported_add_mul.aleo").unwrap().clone();

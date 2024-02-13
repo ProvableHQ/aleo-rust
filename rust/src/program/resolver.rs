@@ -98,31 +98,31 @@ mod tests {
         },
         AleoAPIClient,
     };
-    use snarkvm_console::{account::PrivateKey, network::Testnet3};
+    use snarkvm_console::{account::PrivateKey, network::MainnetV0};
 
     use std::{ops::Add, panic::catch_unwind, str::FromStr};
 
     #[test]
     fn test_file_loading_and_imports() {
-        let private_key = PrivateKey::<Testnet3>::new(&mut rand::thread_rng()).unwrap();
-        let credits = Program::<Testnet3>::credits().unwrap().to_string();
+        let private_key = PrivateKey::<MainnetV0>::new(&mut rand::thread_rng()).unwrap();
+        let credits = Program::<MainnetV0>::credits().unwrap().to_string();
         let imports = vec![("credits.aleo", credits.as_str()), ("hello.aleo", HELLO_PROGRAM)];
         let test_path = setup_directory("aleo_test_file_resolution", IMPORT_PROGRAM, imports).unwrap();
 
         let result = catch_unwind(|| {
             // Create a program manager with file system access only
             let program_manager =
-                ProgramManager::<Testnet3>::new(Some(private_key), None, None, Some(test_path.clone()), false).unwrap();
+                ProgramManager::<MainnetV0>::new(Some(private_key), None, None, Some(test_path.clone()), false).unwrap();
 
             // TEST 1: Test that the program manager can load a program from a file.
-            let program_id = ProgramID::<Testnet3>::from_str("aleo_test.aleo").unwrap();
-            let expected_program = Program::<Testnet3>::from_str(IMPORT_PROGRAM).unwrap();
+            let program_id = ProgramID::<MainnetV0>::from_str("aleo_test.aleo").unwrap();
+            let expected_program = Program::<MainnetV0>::from_str(IMPORT_PROGRAM).unwrap();
             let found_program = program_manager.find_program_on_disk(&program_id).unwrap();
             assert_eq!(expected_program, found_program);
 
             // TEST 2: Test that the program manager can find local imports
-            let test_program = Program::<Testnet3>::from_str(IMPORT_PROGRAM).unwrap();
-            let credits_program = Program::<Testnet3>::credits().unwrap();
+            let test_program = Program::<MainnetV0>::from_str(IMPORT_PROGRAM).unwrap();
+            let credits_program = Program::<MainnetV0>::credits().unwrap();
             let imports = program_manager.find_program_imports(&test_program).unwrap();
             assert_eq!(imports.len(), 1);
 
@@ -131,17 +131,17 @@ mod tests {
 
             // TEST 3: Test that the program manager doesn't load a non-existent program.
             let random_program = random_program_id(16);
-            let program_id = ProgramID::<Testnet3>::from_str(&random_program).unwrap();
+            let program_id = ProgramID::<MainnetV0>::from_str(&random_program).unwrap();
             assert!(program_manager.find_program_on_disk(&program_id).is_err());
 
             // TEST 4: Test that the program_manager throws an error when a program has a bad import,
             let bad_import_code = String::from("import ").add(&random_program_id(16)).add(";").add(IMPORT_PROGRAM);
-            let bad_import_program = Program::<Testnet3>::from_str(&bad_import_code).unwrap();
+            let bad_import_program = Program::<MainnetV0>::from_str(&bad_import_code).unwrap();
             let imports = program_manager.find_program_imports(&bad_import_program);
             assert!(imports.is_err());
 
             // TEST 5: Ensure the program manager doesn't resolve imports for a program that doesn't have any.
-            let credits = Program::<Testnet3>::credits().unwrap();
+            let credits = Program::<MainnetV0>::credits().unwrap();
             let imports = program_manager.find_program_imports(&credits).unwrap();
             assert_eq!(imports.len(), 0);
         });
@@ -153,15 +153,15 @@ mod tests {
 
     #[test]
     fn test_hybrid_program_and_import_loading() {
-        let credits_program_string = Program::<Testnet3>::credits().unwrap().to_string();
+        let credits_program_string = Program::<MainnetV0>::credits().unwrap().to_string();
         let imports = vec![("credits.aleo", credits_program_string.as_str())];
         let test_path = setup_directory("aleo_test_hybrid_resolution", IMPORT_PROGRAM, imports).unwrap();
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
 
         let result = catch_unwind(|| {
             // Create a program manager with file system and network access
-            let api_client = AleoAPIClient::<Testnet3>::testnet3();
-            let program_manager = ProgramManager::<Testnet3>::new(
+            let api_client = AleoAPIClient::<MainnetV0>::testnet3();
+            let program_manager = ProgramManager::<MainnetV0>::new(
                 Some(private_key),
                 None,
                 Some(api_client),
@@ -171,14 +171,14 @@ mod tests {
             .unwrap();
 
             // TEST 1: Test that the program manager can load a program on disk that can't be found online
-            let program_id = ProgramID::<Testnet3>::from_str("aleo_test.aleo").unwrap();
-            let expected_program = Program::<Testnet3>::from_str(IMPORT_PROGRAM).unwrap();
+            let program_id = ProgramID::<MainnetV0>::from_str("aleo_test.aleo").unwrap();
+            let expected_program = Program::<MainnetV0>::from_str(IMPORT_PROGRAM).unwrap();
             let found_program = program_manager.find_program(&program_id).unwrap();
             assert_eq!(expected_program, found_program);
 
             // TEST 2: Test that the program manager can resolve imports when a program is missing from disk
-            let test_program = Program::<Testnet3>::from_str(IMPORT_PROGRAM).unwrap();
-            let credits_program = Program::<Testnet3>::credits().unwrap();
+            let test_program = Program::<MainnetV0>::from_str(IMPORT_PROGRAM).unwrap();
+            let credits_program = Program::<MainnetV0>::credits().unwrap();
             let credits_id = credits_program.id();
             let imports = program_manager.find_program_imports(&test_program).unwrap();
             assert_eq!(imports.len(), 1);
@@ -188,7 +188,7 @@ mod tests {
 
             // TEST 3: Test that the program manager doesn't load a non-existent program.
             let random_program = random_program_id(16);
-            let program_id = ProgramID::<Testnet3>::from_str(&random_program).unwrap();
+            let program_id = ProgramID::<MainnetV0>::from_str(&random_program).unwrap();
             assert!(program_manager.find_program(&program_id).is_err());
 
             // TEST 4: Test that the program manager does load a program that can't be found locally, but can be found online
@@ -197,13 +197,13 @@ mod tests {
             // TEST 5: Test that the program manager throws an error when a program has an import
             // that can't be found online or on disk
             let bad_import_code = String::from("import ").add(&random_program_id(16)).add(";").add(IMPORT_PROGRAM);
-            let bad_import_program = Program::<Testnet3>::from_str(&bad_import_code).unwrap();
+            let bad_import_program = Program::<MainnetV0>::from_str(&bad_import_code).unwrap();
             let imports = program_manager.find_program_imports(&bad_import_program);
             assert!(imports.is_err());
 
             // TEST 6: Ensure a network enabled program manager doesn't resolve imports for a
             // program that doesn't have any
-            let credits = Program::<Testnet3>::credits().unwrap();
+            let credits = Program::<MainnetV0>::credits().unwrap();
             let imports = program_manager.find_program_imports(&credits).unwrap();
             assert_eq!(imports.len(), 0);
         });
@@ -216,28 +216,28 @@ mod tests {
     #[test]
     fn test_network_program_resolution() {
         // Create a program manager with network access only
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
-        let program_id = ProgramID::<Testnet3>::from_str("credits.aleo").unwrap();
-        let credits_off_the_chain = Program::<Testnet3>::credits().unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
+        let program_id = ProgramID::<MainnetV0>::from_str("credits.aleo").unwrap();
+        let credits_off_the_chain = Program::<MainnetV0>::credits().unwrap();
         let credits_on_the_chain = program_manager.find_program_on_chain(&program_id).unwrap();
         assert_eq!(credits_off_the_chain, credits_on_the_chain);
     }
 
     #[test]
     fn test_network_program_imports_are_resolved_correctly() {
-        let credits = Program::<Testnet3>::credits().unwrap();
+        let credits = Program::<MainnetV0>::credits().unwrap();
         // Create a program manager with network access only
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
 
         // Ensure we can find program imports when the program is on chain
-        let test_program = Program::<Testnet3>::from_str(IMPORT_PROGRAM).unwrap();
-        // let credits_program = Program::<Testnet3>::credits().unwrap();
+        let test_program = Program::<MainnetV0>::from_str(IMPORT_PROGRAM).unwrap();
+        // let credits_program = Program::<MainnetV0>::credits().unwrap();
         let imports = program_manager.find_program_imports(&test_program).unwrap();
         assert_eq!(imports.len(), 1);
 
@@ -250,30 +250,30 @@ mod tests {
     #[test]
     fn test_network_resolution_doesnt_find_programs_not_on_chain() {
         // Create a program with a random string as the program id
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let random_program = random_program_id(16);
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
 
         // Create a program manager with network access only
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
 
         // Ensure the program is not on chain
-        let program_id = ProgramID::<Testnet3>::from_str(&random_program).unwrap();
+        let program_id = ProgramID::<MainnetV0>::from_str(&random_program).unwrap();
         assert!(program_manager.find_program_on_chain(&program_id).is_err())
     }
 
     #[test]
     fn test_network_resolution_produces_resolution_errors_for_bad_imports() {
         // Create program manager with only network access
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client), None, false).unwrap();
 
         // Create a bad program with a non-existent import
         let bad_import_code = String::from("import ").add(&random_program_id(16)).add(";").add(IMPORT_PROGRAM);
-        let bad_import_program = Program::<Testnet3>::from_str(&bad_import_code).unwrap();
+        let bad_import_program = Program::<MainnetV0>::from_str(&bad_import_code).unwrap();
 
         // Ensure that the imports failed
         let imports = program_manager.find_program_imports(&bad_import_program);

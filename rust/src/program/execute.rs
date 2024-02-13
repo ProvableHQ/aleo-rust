@@ -246,12 +246,21 @@ impl<N: Network> ProgramManager<N> {
     /// step, then the finalize fee is 0.
     ///
     /// Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-    pub fn estimate_finalize_fee(&self, program: &Program<N>, function: impl TryInto<Identifier<N>>) -> Result<u64> {
+    pub fn estimate_finalize_fee<A: Aleo<Network = N>>(&self, program: &Program<N>, function: impl TryInto<Identifier<N>>) -> Result<u64> {
+        // Retrieve the function name and program id.
         let function_name = function.try_into().map_err(|_| anyhow!("Invalid function name"))?;
-        match program.get_function(&function_name)?.finalize_logic() {
-            Some(finalize) => cost_in_microcredits(finalize),
-            None => Ok(0u64),
-        }
+        // Check if the function exists in the program
+        program.get_function(&function_name)?;
+        // Initialize a process. 
+        let process = Process::setup::<A, _>(&mut rand::thread_rng())?;
+        // TODO: should we just ensure self contains a process? Or generate one optionally on the fly?
+        // let process = match &self.vm {
+        //     Some(vm) => Cow::new(vm.process().deref().read()),
+        //     None => Cow::new(Process::setup::<A, _>(&mut rand::thread_rng())?),
+        // };
+        // Compute finalize cost.
+        let stack = Stack::new(&process, &program)?;
+        cost_in_microcredits(&stack, &function_name)
     }
 }
 
@@ -261,14 +270,14 @@ mod tests {
     use super::*;
     use crate::{random_program, random_program_id, AleoAPIClient, RECORD_5_MICROCREDITS};
     use snarkvm::circuit::AleoV0;
-    use snarkvm_console::network::Testnet3;
+    use snarkvm_console::network::MainnetV0;
 
     #[test]
     fn test_fee_estimation() {
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
         let program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client.clone()), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client.clone()), None, false).unwrap();
 
         let finalize_program = program_manager.api_client.as_ref().unwrap().get_program("credits.aleo").unwrap();
         let hello_hello = program_manager.api_client.as_ref().unwrap().get_program("hello_hello.aleo").unwrap();
@@ -280,7 +289,7 @@ mod tests {
                 vec!["aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px", "5u64"].into_iter(),
             )
             .unwrap();
-        let finalize_only = program_manager.estimate_finalize_fee(&finalize_program, "transfer_public").unwrap();
+        let finalize_only = program_manager.estimate_finalize_fee::<AleoV0>(&finalize_program, "transfer_public").unwrap();
         assert!(finalize_only > 0);
         assert!(finalize > storage);
         assert_eq!(finalize, finalize_only);
@@ -291,7 +300,7 @@ mod tests {
         let (total, (storage, finalize)) = program_manager
             .estimate_execution_fee::<AleoV0>(&hello_hello, "hello", vec!["5u32", "5u32"].into_iter())
             .unwrap();
-        let finalize_only = program_manager.estimate_finalize_fee(&hello_hello, "hello").unwrap();
+        let finalize_only = program_manager.estimate_finalize_fee::<AleoV0>(&hello_hello, "hello").unwrap();
         assert!(storage > 0);
         assert_eq!(finalize_only, 0);
         assert_eq!(finalize, finalize_only);
@@ -309,7 +318,7 @@ mod tests {
 
         // Ensure a program with imports is estimated correctly
         let nested_import_program = api_client.get_program("imported_add_mul.aleo").unwrap();
-        let finalize_only = program_manager.estimate_finalize_fee(&nested_import_program, "add_and_double").unwrap();
+        let finalize_only = program_manager.estimate_finalize_fee::<AleoV0>(&nested_import_program, "add_and_double").unwrap();
         let (total, (storage, finalize)) = program_manager
             .estimate_execution_fee::<AleoV0>(
                 &nested_import_program,
@@ -335,13 +344,13 @@ mod tests {
     #[test]
     #[ignore]
     fn test_execution() {
-        let private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
         let encrypted_private_key =
             crate::Encryptor::encrypt_private_key_with_secret(&private_key, "password").unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
+        let api_client = AleoAPIClient::<MainnetV0>::local_testnet3("3033");
         let record_finder = RecordFinder::new(api_client.clone());
         let mut program_manager =
-            ProgramManager::<Testnet3>::new(Some(private_key), None, Some(api_client.clone()), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(private_key), None, Some(api_client.clone()), None, false).unwrap();
 
         let fee = 2_500_000;
         let finalize_fee = 8_000_000;
@@ -370,7 +379,7 @@ mod tests {
 
         // Test programs can be executed with an encrypted private key
         let mut program_manager =
-            ProgramManager::<Testnet3>::new(None, Some(encrypted_private_key), Some(api_client), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(None, Some(encrypted_private_key), Some(api_client), None, false).unwrap();
 
         for i in 0..5 {
             let fee_record = record_finder.find_one_record(&private_key, fee, None).unwrap();
@@ -435,15 +444,15 @@ mod tests {
     #[test]
     fn test_execution_failure_modes() {
         let rng = &mut rand::thread_rng();
-        let recipient_private_key = PrivateKey::<Testnet3>::new(rng).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::testnet3();
-        let record_5_microcredits = Record::<Testnet3, Plaintext<Testnet3>>::from_str(RECORD_5_MICROCREDITS).unwrap();
+        let recipient_private_key = PrivateKey::<MainnetV0>::new(rng).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::testnet3();
+        let record_5_microcredits = Record::<MainnetV0, Plaintext<MainnetV0>>::from_str(RECORD_5_MICROCREDITS).unwrap();
         let record_2000000001_microcredits =
-            Record::<Testnet3, Plaintext<Testnet3>>::from_str(RECORD_2000000001_MICROCREDITS).unwrap();
+            Record::<MainnetV0, Plaintext<MainnetV0>>::from_str(RECORD_2000000001_MICROCREDITS).unwrap();
 
         // Ensure that program manager creation fails if no key is provided
         let mut program_manager =
-            ProgramManager::<Testnet3>::new(Some(recipient_private_key), None, Some(api_client), None, false).unwrap();
+            ProgramManager::<MainnetV0>::new(Some(recipient_private_key), None, Some(api_client), None, false).unwrap();
 
         // Assert that execution fails if record's available microcredits are below the fee
         let execution = program_manager.execute_program(

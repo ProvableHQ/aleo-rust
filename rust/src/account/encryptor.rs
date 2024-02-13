@@ -85,7 +85,7 @@ impl<N: Network> Encryptor<N> {
 mod tests {
     use super::*;
 
-    use snarkvm_console::{network::Testnet3 as CurrentNetwork, prelude::TestRng};
+    use snarkvm_console::{network::MainnetV0 as CurrentNetwork, prelude::TestRng};
 
     #[test]
     fn test_encryptor_encrypt_and_decrypt() {

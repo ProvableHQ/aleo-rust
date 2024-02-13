@@ -158,7 +158,7 @@ impl<N: Network> ProgramManager<N> {
         let rng = &mut rand::thread_rng();
         let private_key = PrivateKey::<N>::new(rng)?;
         let deployment = vm.deploy(&private_key, program, None, 0u64, None, rng)?;
-        let (minimum_deployment_cost, (storage_cost, namespace_cost)) =
+        let (minimum_deployment_cost, (storage_cost, namespace_cost, _)) =
             deployment_cost::<N>(deployment.deployment().ok_or(anyhow!("Deployment failed"))?)?;
         Ok((minimum_deployment_cost, (storage_cost, namespace_cost)))
     }
@@ -199,28 +199,28 @@ mod tests {
         AleoAPIClient,
         RecordFinder,
     };
-    use snarkvm_console::network::Testnet3;
+    use snarkvm_console::network::MainnetV0;
 
     use std::{ops::Add, str::FromStr, thread};
 
     #[test]
     #[ignore]
     fn test_deploy() {
-        let recipient_private_key = PrivateKey::<Testnet3>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
-        let finalize_program = Program::<Testnet3>::from_str(FINALIZE_TEST_PROGRAM).unwrap();
-        let multiply_program = Program::<Testnet3>::from_str(MULTIPLY_PROGRAM).unwrap();
-        let multiply_import_program = Program::<Testnet3>::from_str(MULTIPLY_IMPORT_PROGRAM).unwrap();
+        let recipient_private_key = PrivateKey::<MainnetV0>::from_str(RECIPIENT_PRIVATE_KEY).unwrap();
+        let finalize_program = Program::<MainnetV0>::from_str(FINALIZE_TEST_PROGRAM).unwrap();
+        let multiply_program = Program::<MainnetV0>::from_str(MULTIPLY_PROGRAM).unwrap();
+        let multiply_import_program = Program::<MainnetV0>::from_str(MULTIPLY_IMPORT_PROGRAM).unwrap();
 
         // Wait for the node to bootup
         thread::sleep(std::time::Duration::from_secs(5));
         transfer_to_test_account(2000000001, 14, recipient_private_key, "3033").unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
-        let record_finder = RecordFinder::<Testnet3>::new(api_client.clone());
+        let api_client = AleoAPIClient::<MainnetV0>::local_testnet3("3033");
+        let record_finder = RecordFinder::<MainnetV0>::new(api_client.clone());
         let temp_dir = setup_directory("aleo_test_deploy", CREDITS_IMPORT_TEST_PROGRAM, vec![]).unwrap();
 
         // Ensure that program manager creation fails if no key is provided
         let mut program_manager =
-            ProgramManager::<Testnet3>::new(Some(recipient_private_key), None, Some(api_client), Some(temp_dir), false)
+            ProgramManager::<MainnetV0>::new(Some(recipient_private_key), None, Some(api_client), Some(temp_dir), false)
                 .unwrap();
 
         // Wait for the transactions to show up on chain
@@ -303,18 +303,18 @@ mod tests {
     #[test]
     fn test_deploy_failure_conditions() {
         let rng = &mut rand::thread_rng();
-        let recipient_private_key = PrivateKey::<Testnet3>::new(rng).unwrap();
-        let record_5_microcredits = Record::<Testnet3, Plaintext<Testnet3>>::from_str(RECORD_5_MICROCREDITS).unwrap();
+        let recipient_private_key = PrivateKey::<MainnetV0>::new(rng).unwrap();
+        let record_5_microcredits = Record::<MainnetV0, Plaintext<MainnetV0>>::from_str(RECORD_5_MICROCREDITS).unwrap();
         let record_2000000001_microcredits =
-            Record::<Testnet3, Plaintext<Testnet3>>::from_str(RECORD_2000000001_MICROCREDITS).unwrap();
-        let api_client = AleoAPIClient::<Testnet3>::local_testnet3("3033");
+            Record::<MainnetV0, Plaintext<MainnetV0>>::from_str(RECORD_2000000001_MICROCREDITS).unwrap();
+        let api_client = AleoAPIClient::<MainnetV0>::local_testnet3("3033");
         let randomized_program = random_program();
         let randomized_program_id = randomized_program.id().to_string();
         let randomized_program_string = randomized_program.to_string();
         let temp_dir = setup_directory("aleo_unit_test_fees", &randomized_program.to_string(), vec![]).unwrap();
 
         // Ensure that program manager creation fails if no key is provided
-        let mut program_manager = ProgramManager::<Testnet3>::new(
+        let mut program_manager = ProgramManager::<MainnetV0>::new(
             Some(recipient_private_key),
             None,
             Some(api_client.clone()),
@@ -356,7 +356,7 @@ mod tests {
             (&randomized_program_id, &missing_import_program_string),
         ])
         .unwrap();
-        let mut program_manager = ProgramManager::<Testnet3>::new(
+        let mut program_manager = ProgramManager::<MainnetV0>::new(
             Some(recipient_private_key),
             None,
             Some(api_client),
