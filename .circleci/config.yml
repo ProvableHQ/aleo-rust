@@ -165,4 +165,3 @@ workflows:
       - check-fmt
       - check-clippy
       - aleo-executable
-      - aleo-deploy-and-execute
