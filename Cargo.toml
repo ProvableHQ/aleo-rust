@@ -27,47 +27,47 @@ default-features = false
 
 [workspace.dependencies.snarkvm]
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-circuit-network]
 package = "snarkvm-circuit-network"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-console]
 package = "snarkvm-console"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-console-network]
 package = "snarkvm-console-network"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-synthesizer]
 package = "snarkvm-synthesizer"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-ledger-block]
 package = "snarkvm-ledger-block"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-ledger-store]
 package = "snarkvm-ledger-store"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-ledger-query]
 package = "snarkvm-ledger-query"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [workspace.dependencies.snarkvm-wasm]
 package = "snarkvm-wasm"
 git = "https://github.com/AleoHQ/snarkVM.git"
-rev = "1bfe45947"
+rev = "6e182c6"
 
 [lib]
 path = "cli/lib.rs"
